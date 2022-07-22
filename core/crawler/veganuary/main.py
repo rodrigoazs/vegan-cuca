@@ -1,4 +1,6 @@
 import json
+import logging
+import os
 import random
 import time
 
@@ -10,9 +12,15 @@ headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36"
 }
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%m-%d %H:%M",
+)
+
 
 def get_soup(url):
-    time.sleep(random.uniform(1, 5))
+    time.sleep(random.uniform(0, 2))
     page = requests.get(url, headers=headers)
     html = page.text
     soup = BeautifulSoup(html, "html.parser")
@@ -20,11 +28,18 @@ def get_soup(url):
 
 
 def get_recipe(url):
-    soup = get_soup(url)
-    title = soup.find("h1", class_="hero__title").text
-    ingredients = soup.find("div", class_="recipe__ingredients").text
-    preparation = soup.find("div", class_="recipe__preparation").text
-    return title, ingredients, preparation
+    try:
+        soup = get_soup(url)
+        title = soup.find("h1", class_="hero__title").text
+        ingredients = soup.find("div", class_="recipe__ingredients").text
+        preparation = soup.find("div", class_="recipe__preparation")
+        if not preparation:
+            preparation = soup.find("div", class_="recipe__method")
+        preparation = preparation.text
+        return title, ingredients, preparation
+    except Exception as err:
+        logging.debug(f"Error in {url}")
+        raise err
 
 
 def save_json_file(href, title, ingredients, preparation):
@@ -49,8 +64,14 @@ for link in results:
     recipes = soup.find_all("a", class_="card__link")
     for recipe in recipes:
         recipe_href = recipe["href"]
-        title, ingredients, preparation = get_recipe(recipe_href)
-        save_json_file(recipe_href, title, ingredients, preparation)
+        file_name = recipe_href.split("/")[-2]
+        file_path = f"data/veganuary/{file_name}.json"
+        if not os.path.exists(file_path):
+            logging.debug(f"Saving {file_path}")
+            title, ingredients, preparation = get_recipe(recipe_href)
+            save_json_file(recipe_href, title, ingredients, preparation)
+        else:
+            logging.debug(f"Skipping {file_path}")
     pagination = soup.find_all("a", class_="page-numbers")
     if pagination:
         last_page = int(pagination[-1].text)
@@ -59,7 +80,13 @@ for link in results:
             recipes = soup.find_all("a", class_="card__link")
             for recipe in recipes:
                 recipe_href = recipe["href"]
-                title, ingredients, preparation = get_recipe(recipe_href)
-                save_json_file(recipe_href, title, ingredients, preparation)
+                file_name = recipe_href.split("/")[-2]
+                file_path = f"data/veganuary/{file_name}.json"
+                if not os.path.exists(file_path):
+                    logging.debug(f"Saving {file_path}")
+                    title, ingredients, preparation = get_recipe(recipe_href)
+                    save_json_file(recipe_href, title, ingredients, preparation)
+                else:
+                    logging.debug(f"Skipping {file_path}")
 
-print("Finished")
+logging.debug("Finished")
