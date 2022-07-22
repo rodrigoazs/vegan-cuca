@@ -20,7 +20,7 @@ logging.basicConfig(
 
 
 def get_soup(url):
-    time.sleep(random.uniform(0, 2))
+    time.sleep(random.uniform(0, 1))
     page = requests.get(url, headers=headers)
     html = page.text
     soup = BeautifulSoup(html, "html.parser")
