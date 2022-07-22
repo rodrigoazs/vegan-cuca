@@ -87,6 +87,7 @@ else:
 
 while to_visit:
     url = to_visit.pop()
+    visited = visited.union(set([url]))
     file_name = url.split("/")[-2]
     file_path = f"data/simple-veganista/{file_name}.json"
     if not os.path.exists(file_path):
@@ -95,7 +96,6 @@ while to_visit:
             logging.debug(f"Saving {file_path}")
             title, ingredients, instructions = recipe
             save_json_file(url, title, ingredients, instructions)
-        visited = visited.union(set([url]))
         diff = set(hrefs).difference(visited)
         to_visit = to_visit.union(diff)
     else:
