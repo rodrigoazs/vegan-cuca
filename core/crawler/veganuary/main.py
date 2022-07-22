@@ -1,3 +1,4 @@
+import json
 import random
 import time
 
@@ -26,6 +27,19 @@ def get_recipe(url):
     return title, ingredients, preparation
 
 
+def save_json_file(href, title, ingredients, preparation):
+    json_data = {
+        "href": href,
+        "title": title,
+        "ingredients": ingredients,
+        "preparation": preparation,
+    }
+    file_name = href.split("/")[-2]
+    file_path = f"data/veganuary/{file_name}.json"
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(json_data, f)
+
+
 soup = get_soup(URL)
 results = soup.find_all("a", class_="card__link")
 
@@ -36,7 +50,7 @@ for link in results:
     for recipe in recipes:
         recipe_href = recipe["href"]
         title, ingredients, preparation = get_recipe(recipe_href)
-        raise Exception(title)
+        save_json_file(recipe_href, title, ingredients, preparation)
     pagination = soup.find_all("a", class_="page-numbers")
     if pagination:
         last_page = int(pagination[-1].text)
@@ -46,6 +60,6 @@ for link in results:
             for recipe in recipes:
                 recipe_href = recipe["href"]
                 title, ingredients, preparation = get_recipe(recipe_href)
-                raise Exception(title)
+                save_json_file(recipe_href, title, ingredients, preparation)
 
 print("Finished")
