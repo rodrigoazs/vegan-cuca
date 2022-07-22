@@ -1,0 +1,4 @@
+[flake8]
+ignore = ANN101,ANN102,ANN204,ANN002,ANN003
+select = A
+exclude = */__init__.py, /*/*/__init__.py, setup.py, venve, tests/*
