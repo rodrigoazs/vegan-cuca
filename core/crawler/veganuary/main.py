@@ -33,9 +33,9 @@ def get_recipe(url):
         title = soup.find("h1", class_="hero__title").text
         ingredients = soup.find("div", class_="recipe__ingredients").text
         preparation = soup.find("div", class_="recipe__preparation")
-        if not preparation:
-            preparation = soup.find("div", class_="recipe__method")
-        preparation = preparation.text
+        method = soup.find("div", class_="recipe__method")
+        desc = [p.text for p in [preparation, method] if p]
+        preparation = "".join(desc)
         return title, ingredients, preparation
     except Exception as err:
         logging.debug(f"Error in {url}")
